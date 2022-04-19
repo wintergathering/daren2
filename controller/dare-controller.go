@@ -1,6 +1,9 @@
 package controller
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/wintergathering/daren2/models"
 	"github.com/wintergathering/daren2/repository"
@@ -27,11 +30,36 @@ func (cn *controller) FindAll() ([]models.Dare, error) {
 
 func (cn *controller) Save(c *gin.Context) error {
 
+	var newDare *models.Dare
+
 	dareTitle := c.PostForm("title")
 	dareText := c.PostForm("text")
 
-	newDare := &models.Dare{dareTitle, dareText}
+	newDare = &models.Dare{dareTitle, dareText}
 
-	cn.dare.Save(newDare)
-	//resume here later
+	_, err := cn.dare.Save(newDare)
+
+	if err != nil {
+		log.Fatalf("Failed to save dare: %v", err)
+	}
+
+	return nil
 }
+
+func (cn *controller) ShowAll(c *gin.Context) {
+	dares, err := cn.dare.FindAll()
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "dares not retrieved"})
+		return
+	}
+
+	data := gin.H{
+		"title": "All of the Dares",
+		"dares": dares,
+	}
+
+	c.HTML(http.StatusOK, "all_dares.html", data)
+}
+
+//resume here. next step is likely to make the html templates to try this out
