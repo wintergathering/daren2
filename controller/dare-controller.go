@@ -8,7 +8,7 @@ import (
 
 type DareController interface {
 	Save(c *gin.Context) error
-	FindAll() []models.Dare
+	FindAll() ([]models.Dare, error)
 }
 
 type controller struct {
@@ -21,7 +21,17 @@ func New(d repository.DareRepository) DareController {
 	}
 }
 
-func (cn *controller) FindAll() {
+func (cn *controller) FindAll() ([]models.Dare, error) {
 	return cn.dare.FindAll()
-	//RESUME HERE -- THIS NEEDS TO ALSO RETURN AN ERROR I THINK
+}
+
+func (cn *controller) Save(c *gin.Context) error {
+
+	dareTitle := c.PostForm("title")
+	dareText := c.PostForm("text")
+
+	newDare := &models.Dare{dareTitle, dareText}
+
+	cn.dare.Save(newDare)
+	//resume here later
 }

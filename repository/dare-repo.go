@@ -38,7 +38,6 @@ func (*repo) Save(d *models.Dare) (*models.Dare, error) {
 	defer client.Close()
 
 	_, _, err = client.Collection(collectionName).Add(ctx, map[string]interface{}{
-		"ID":    d.ID,
 		"Title": d.Title,
 		"Text":  d.Text,
 	})
@@ -76,7 +75,6 @@ func (*repo) FindAll() ([]models.Dare, error) {
 		}
 
 		dare := models.Dare{
-			ID:    doc.Data()["ID"].(string),
 			Title: doc.Data()["Title"].(string),
 			Text:  doc.Data()["Text"].(string),
 		}
