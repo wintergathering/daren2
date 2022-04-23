@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -39,11 +38,7 @@ func (cn *controller) Save(c *gin.Context) error {
 
 	_, err := cn.dare.Save(newDare)
 
-	if err != nil {
-		log.Fatalf("Failed to save dare: %v", err)
-	}
-
-	return nil
+	return err
 }
 
 func (cn *controller) ShowAll(c *gin.Context) {
