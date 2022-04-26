@@ -17,7 +17,10 @@ func main() {
 
 	r := gin.Default()
 
-	r.Static("/", "./")
+	r.Static("/home", "./")
+	r.LoadHTMLGlob("templates/*.html")
+
+	//add a new dare
 	r.POST("/", func(c *gin.Context) {
 		err := dareController.Save(c)
 		if err != nil {
@@ -27,11 +30,8 @@ func main() {
 		}
 	})
 
-	// r.GET("/ping", func(c *gin.Context) {
-	// 	c.JSON(200, gin.H{
-	// 		"message": "pong",
-	// 	})
-	// })
+	//view all dares
+	r.GET("/all_dares", dareController.ShowAll)
 
 	r.Run("localhost:8080")
 }

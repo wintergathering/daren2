@@ -11,6 +11,7 @@ import (
 type DareController interface {
 	Save(c *gin.Context) error
 	FindAll() ([]models.Dare, error)
+	ShowAll(c *gin.Context)
 }
 
 type controller struct {
@@ -56,5 +57,3 @@ func (cn *controller) ShowAll(c *gin.Context) {
 
 	c.HTML(http.StatusOK, "all_dares.html", data)
 }
-
-//resume here. next step is likely to make the html templates to try this out
