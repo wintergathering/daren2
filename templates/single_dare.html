@@ -2,21 +2,18 @@
 
 <div class="album py-4 bg-light">
     <div class="container">
+        <h1>Your Random Dare:</h1>
         <div class="row">
-            <!--Loop over the list of bathrooms -->
-            {{range .dares }}
-            <div class="col-md-4">
-                <div class="card mb-4 shadow-sm">
+            <div class="col-md-8">
+                <div class="card mb-8 shadow-sm">
                     <div class="card-body">
                         <p class="card-text">
                         <h3>{{.Title}}</h3>
                         <p>{{.Text}}</p>
-                        <p>Seen? {{.Seen}}</p>
                         </p>
                     </div>
                 </div>
             </div>
-            {{end}}
         </div>
     </div>
 </div>

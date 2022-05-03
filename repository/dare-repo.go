@@ -14,7 +14,8 @@ import (
 type DareRepository interface {
 	Save(d *models.Dare) (*models.Dare, error)
 	FindAll() ([]models.Dare, error)
-	GetRandDare() (*models.Dare, error)
+	GetRandDare() (*models.Dare, string, error)
+	UpdateSeen(id string) (string, error)
 }
 
 type repo struct{}
@@ -43,6 +44,7 @@ func (*repo) Save(d *models.Dare) (*models.Dare, error) {
 	_, _, err = client.Collection(collectionName).Add(ctx, map[string]interface{}{
 		"Title": d.Title,
 		"Text":  d.Text,
+		"Seen":  d.Seen,
 	})
 
 	if err != nil {
@@ -128,7 +130,7 @@ func getRandID() (string, error) {
 
 	var ids []string
 
-	iter := client.Collection("dares").Documents(ctx)
+	iter := client.Collection(collectionName).Where("Seen", "==", false).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -151,7 +153,7 @@ func getRandID() (string, error) {
 	return id, nil
 }
 
-func (*repo) GetRandDare() (*models.Dare, error) {
+func (*repo) GetRandDare() (*models.Dare, string, error) {
 	id, err := getRandID()
 
 	if err != nil {
@@ -164,5 +166,27 @@ func (*repo) GetRandDare() (*models.Dare, error) {
 		log.Fatalf("Error getting random dare: %v", err)
 	}
 
-	return dare, nil
+	return dare, id, nil
+}
+
+func (*repo) UpdateSeen(id string) (string, error) {
+	ctx := context.Background()
+
+	client, err := firestore.NewClient(ctx, projectID)
+
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.Collection(collectionName).Doc(id).Update(ctx, []firestore.Update{
+		{Path: "Seen", Value: true},
+	})
+
+	if err != nil {
+		log.Fatalf("Failed to update `seen` field: %v", err)
+	}
+
+	msg := "Updated seen field"
+
+	return msg, nil
 }

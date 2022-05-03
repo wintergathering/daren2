@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ type DareController interface {
 	Save(c *gin.Context) error
 	FindAll() ([]models.Dare, error)
 	ShowAll(c *gin.Context)
+	ShowRandom(c *gin.Context)
 }
 
 type controller struct {
@@ -52,9 +54,27 @@ func (cn *controller) ShowAll(c *gin.Context) {
 	}
 
 	data := gin.H{
-		"title": "All of the Dares",
+		"hd":    "All of the Dares",
 		"dares": dares,
 	}
 
 	c.HTML(http.StatusOK, "all_dares.html", data)
+}
+
+func (cn *controller) ShowRandom(c *gin.Context) {
+	d, id, err := cn.dare.GetRandDare()
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "dare not retrieved"})
+		return
+	}
+
+	c.HTML(http.StatusOK, "single_dare.html", d)
+
+	//update the dare to be seen after it's pulled
+	_, err = cn.dare.UpdateSeen(id)
+
+	if err != nil {
+		log.Fatalf("error updating seen value of dare: %v", err)
+	}
 }

@@ -21,7 +21,7 @@ func main() {
 	r.LoadHTMLGlob("templates/*.html")
 
 	//add a new dare
-	r.POST("/", func(c *gin.Context) {
+	r.POST("/home", func(c *gin.Context) {
 		err := dareController.Save(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -32,6 +32,9 @@ func main() {
 
 	//view all dares
 	r.GET("/all_dares", dareController.ShowAll)
+
+	//show a random dare
+	r.GET("/rand_dare", dareController.ShowRandom)
 
 	r.Run("localhost:8080")
 }
