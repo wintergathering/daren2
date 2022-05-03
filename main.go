@@ -26,7 +26,7 @@ func main() {
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		} else {
-			c.JSON(http.StatusOK, gin.H{"message": "Dare is valid"})
+			c.HTML(http.StatusOK, "return.html", nil)
 		}
 	})
 
@@ -38,5 +38,3 @@ func main() {
 
 	r.Run("localhost:8080")
 }
-
-// see this video for some help: https://www.youtube.com/watch?v=RHa4D6aNVpg
