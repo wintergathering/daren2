@@ -34,8 +34,9 @@ func (cn *controller) Save(c *gin.Context) error {
 
 	dareTitle := c.PostForm("title")
 	dareText := c.PostForm("text")
+	dareSeen := false
 
-	newDare = &models.Dare{dareTitle, dareText}
+	newDare = &models.Dare{dareTitle, dareText, dareSeen}
 
 	_, err := cn.dare.Save(newDare)
 
