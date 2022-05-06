@@ -116,6 +116,13 @@ func findByID(id string) (*models.Dare, error) {
 
 }
 
+//adding an error for if there are no dares left
+type NoDareErr struct{}
+
+func (nd *NoDareErr) Error() string {
+	return "no dares left unseen"
+}
+
 func getRandID() (string, error) {
 	ctx := context.Background()
 
@@ -144,6 +151,10 @@ func getRandID() (string, error) {
 		ids = append(ids, idx)
 	}
 
+	if len(ids) == 0 {
+		return "", &NoDareErr{}
+	}
+
 	rand.Seed(time.Now().Unix())
 
 	n := rand.Intn(len(ids))
@@ -157,7 +168,8 @@ func (*repo) GetRandDare() (*models.Dare, string, error) {
 	id, err := getRandID()
 
 	if err != nil {
-		log.Fatalf("Error getting a random id: %v", err)
+		//log.Fatalf("Error getting a random id: %v", err)
+		return nil, "", err
 	}
 
 	dare, err := findByID(id)

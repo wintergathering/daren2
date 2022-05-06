@@ -65,7 +65,8 @@ func (cn *controller) ShowRandom(c *gin.Context) {
 	d, id, err := cn.dare.GetRandDare()
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "dare not retrieved"})
+		//c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		c.HTML(http.StatusOK, "no_dares.html", nil)
 		return
 	}
 
