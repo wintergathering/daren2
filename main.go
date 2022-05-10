@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wintergathering/daren2/controller"
@@ -15,7 +16,14 @@ var (
 
 func main() {
 
+	gin.SetMode(gin.ReleaseMode)
+
 	r := gin.Default()
+
+	httpPort := os.Getenv("PORT")
+	if httpPort == "" {
+		httpPort = "8080"
+	}
 
 	r.Static("/home", "./")
 	r.LoadHTMLGlob("templates/*.html")
@@ -36,5 +44,5 @@ func main() {
 	//show a random dare
 	r.GET("/rand_dare", dareController.ShowRandom)
 
-	r.Run("localhost:8080")
+	r.Run(":" + httpPort)
 }
