@@ -1,16 +1,21 @@
 package daren2
 
-import "context"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 type Dare struct {
-	Title   string `json:"title"`
-	Text    string `json:"text"`
-	Seen    bool   `json:"seen"`
-	AddedBy string `json:"addedBy"`
+	UUID    uuid.UUID `json:"uuid"`
+	Title   string    `json:"title"`
+	Text    string    `json:"text"`
+	Seen    bool      `json:"seen"`
+	AddedBy string    `json:"addedBy"`
 }
 
 type DareService interface {
-	CreateDare(ctx context.Context, dare Dare) error
-	GetRandomDare(ctx context.Context) (Dare, error)
-	GetAllDares(ctx context.Context) ([]Dare, error)
+	CreateDare(ctx context.Context, dare *Dare) error
+	GetRandomDare(ctx context.Context) (*Dare, error)
+	GetAllDares(ctx context.Context) ([]*Dare, error)
 }

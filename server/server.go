@@ -26,15 +26,24 @@ func NewServer(r *mux.Router, ds daren2.DareService, addr string) *Server {
 	}
 }
 
+// helper to handle a generic index right now
+func handleAPIIndex(w http.ResponseWriter, r *http.Request) {
+	msg := make(map[string]string)
+
+	msg["hello"] = "Welcome to Daren's API"
+
+	writeJSON(w, http.StatusOK, msg)
+}
+
 // register routes on the server
 // will want 'regular' routes that render HTML and 'api' routes (/api/..) that return JSON
 func (s *Server) registerRoutes() {
-	//TODO
+	s.Router.HandleFunc("/api", handleAPIIndex).Methods("GET")
+	s.Router.HandleFunc("/api/dare/create", s.handleAPICreateDare).Methods("POST")
 }
 
 // run the server
 func (s *Server) Run() {
-	//TODO
 	s.registerRoutes()
 
 	fmt.Printf("Daren is running on port %s", s.Srvr.Addr)

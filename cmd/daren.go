@@ -1,20 +1,23 @@
 package main
 
-import "net/http"
+import (
+	"github.com/gorilla/mux"
+	"github.com/wintergathering/daren2/frstr"
+	"github.com/wintergathering/daren2/server"
+)
 
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(200)
-
-	w.Write([]byte("Hello, World"))
-}
+const listenAddr = ":8080"
 
 func main() {
-	s := &http.Server{
-		Addr: ":8080",
-	}
 
-	http.HandleFunc("/", handleIndex)
+	client := frstr.NewFirestoreClient()
 
-	s.ListenAndServe()
+	defer client.Close()
 
+	ds := frstr.NewDareService(client)
+	r := mux.NewRouter()
+
+	s := server.NewServer(r, ds, listenAddr)
+
+	s.Run()
 }

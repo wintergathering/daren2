@@ -1,8 +1,8 @@
 build-app:
-  go build -o bin/daren ./cmd/daren.go
+		go build -o bin/daren ./cmd/daren.go
 
 run: build-app
-  @./bin/daren
+		@./bin/daren
 
 clean:
-  @rm -rf bin
+		@rm -rf bin

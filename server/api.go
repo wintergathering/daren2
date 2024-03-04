@@ -1,0 +1,50 @@
+package server
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+
+	"github.com/google/uuid"
+	"github.com/wintergathering/daren2"
+)
+
+// api handler for dare creation
+func (s *Server) handleAPICreateDare(w http.ResponseWriter, r *http.Request) {
+
+	ctx := context.Background()
+
+	var d *daren2.Dare
+
+	err := json.NewDecoder(r.Body).Decode(&d)
+
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, err)
+		return
+	}
+
+	id := uuid.New()
+
+	//populate other components of dare
+	d.UUID = id
+	d.Seen = false
+
+	//TODO -- ADD VALIDATION LATER
+
+	err = s.DareService.CreateDare(ctx, d)
+
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, d)
+}
+
+// utility func to write out JSON
+func writeJSON(w http.ResponseWriter, statusCode int, v any) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+
+	json.NewEncoder(w).Encode(v)
+}
