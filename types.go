@@ -2,16 +2,17 @@ package daren2
 
 import (
 	"context"
-
-	"github.com/google/uuid"
+	"errors"
 )
 
+var ErrNoDare = errors.New("no dares available")
+
 type Dare struct {
-	UUID    uuid.UUID `json:"uuid"`
-	Title   string    `json:"title"`
-	Text    string    `json:"text"`
-	Seen    bool      `json:"seen"`
-	AddedBy string    `json:"addedBy"`
+	UUID    string `json:"uuid"`
+	Title   string `json:"title"`
+	Text    string `json:"text"`
+	Seen    bool   `json:"seen"`
+	AddedBy string `json:"addedBy"`
 }
 
 type DareService interface {

@@ -38,8 +38,11 @@ func handleAPIIndex(w http.ResponseWriter, r *http.Request) {
 // register routes on the server
 // will want 'regular' routes that render HTML and 'api' routes (/api/..) that return JSON
 func (s *Server) registerRoutes() {
+	//api routes
 	s.Router.HandleFunc("/api", handleAPIIndex).Methods("GET")
 	s.Router.HandleFunc("/api/dare/create", s.handleAPICreateDare).Methods("POST")
+	s.Router.HandleFunc("/api/dare/getRandom", s.handleAPIGetRandDare).Methods("GET")
+	s.Router.HandleFunc("/api/dare/getAll", s.handleAPIGetAllDares).Methods("GET")
 }
 
 // run the server
