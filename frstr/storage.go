@@ -55,6 +55,7 @@ func (ds dareService) GetRandomDare(ctx context.Context) (*daren2.Dare, error) {
 	ref := uuid.New().String()
 
 	//try to find a random document 'less than' the random id we just created
+	//add condition where 'seen' is false
 	iter := ds.Client.Collection(daresColl).Where("UUID", "<", ref).OrderBy("UUID", 1).Limit(1).Documents(ctx)
 
 	defer iter.Stop()
@@ -77,6 +78,18 @@ func (ds dareService) GetRandomDare(ctx context.Context) (*daren2.Dare, error) {
 	var dare *daren2.Dare
 
 	doc.DataTo(&dare)
+
+	//update dare as seen
+	id := doc.Ref.ID
+
+	updateSeen := []firestore.Update{
+		{Path: "Seen", Value: true},
+	}
+	_, err = ds.Client.Collection(daresColl).Doc(id).Update(ctx, updateSeen)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return dare, nil
 }
