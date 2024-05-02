@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 	"github.com/wintergathering/daren2"
 )
@@ -29,7 +30,14 @@ func (s *Server) handleAPICreateDare(w http.ResponseWriter, r *http.Request) {
 	d.UUID = id
 	d.Seen = false
 
-	//TODO -- ADD VALIDATION LATER
+	//validate struct
+	validate := validator.New()
+	err = validate.Struct(d)
+
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, err)
+		return
+	}
 
 	err = s.DareService.CreateDare(ctx, d)
 
