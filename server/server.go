@@ -2,7 +2,9 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"text/template"
 
 	"github.com/gorilla/mux"
 	"github.com/wintergathering/daren2"
@@ -13,26 +15,26 @@ type Server struct {
 	Router      *mux.Router
 	Srvr        *http.Server
 	DareService daren2.DareService
+	Templates   *template.Template
 }
 
 // constructor to build a new server
 func NewServer(r *mux.Router, ds daren2.DareService, addr string) *Server {
+
+	tmpl, err := template.ParseGlob("templates/*.html")
+
+	if err != nil {
+		log.Fatalf("couldn't parse templates: %v", err.Error())
+	}
+
 	return &Server{
 		Router: r,
 		Srvr: &http.Server{
 			Addr: addr,
 		},
 		DareService: ds,
+		Templates:   tmpl,
 	}
-}
-
-// helper to handle a generic index right now
-func handleAPIIndex(w http.ResponseWriter, r *http.Request) {
-	msg := make(map[string]string)
-
-	msg["hello"] = "Welcome to Daren's API"
-
-	writeJSON(w, http.StatusOK, msg)
 }
 
 // register routes on the server
