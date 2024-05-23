@@ -11,7 +11,7 @@ import (
 
 const (
 	projectID = "dares-app-346910"
-	daresColl = "dares2"
+	daresColl = "dares"
 )
 
 type dareService struct {
