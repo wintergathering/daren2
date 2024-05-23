@@ -104,17 +104,11 @@ func (s *Server) handleCreateDare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var d *daren2.Dare
+	title := r.FormValue("title")
+	text := r.FormValue("text")
+	addedBy := r.FormValue("addedBy")
 
-	d.Title = r.FormValue("title")
-	d.Text = r.FormValue("text")
-	d.AddedBy = r.FormValue("addedBy")
-
-	id := uuid.New().String()
-
-	//populate other components of dare
-	d.UUID = id
-	d.Seen = false
+	d := daren2.NewDare(title, text, addedBy)
 
 	//validate struct
 	validate := validator.New()

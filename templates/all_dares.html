@@ -3,7 +3,7 @@
 <div class="album py-4 bg-light">
     <div class="container">
         <div class="row">
-            {{range .dares }}
+            {{range . }}
             <div class="col-md-4">
                 <div class="card mb-4 shadow-sm">
                     <div class="card-body">
@@ -11,7 +11,7 @@
                         <h3>{{.Title}}</h3>
                         <p>{{.Text}}</p>
                         <p>Seen? {{.Seen}}</p>
-                        <p>{{.AddedBy}}</p>
+                        <p>Added by: {{.AddedBy}}</p>
                         </p>
                     </div>
                 </div>
@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    <p style="text-align:center"><a href="/home">Click here to return home</a></p>
+    <p style="text-align:center"><a href="/">Click here to return home</a></p>
 </div>
 
 

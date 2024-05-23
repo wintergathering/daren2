@@ -45,6 +45,12 @@ func (s *Server) registerRoutes() {
 	s.Router.HandleFunc("/api/dare/create", s.handleAPICreateDare).Methods("POST")
 	s.Router.HandleFunc("/api/dare/getRandom", s.handleAPIGetRandDare).Methods("GET")
 	s.Router.HandleFunc("/api/dare/getAll", s.handleAPIGetAllDares).Methods("GET")
+
+	//html routes
+	s.Router.HandleFunc("/", s.handleIndex).Methods("GET")
+	s.Router.HandleFunc("/", s.handleCreateDare).Methods("POST")
+	s.Router.HandleFunc("/all_dares", s.handleGetAllDares).Methods("GET")
+	s.Router.HandleFunc("/rand_dare", s.handleGetRandDare)
 }
 
 // run the server

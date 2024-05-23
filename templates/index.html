@@ -2,13 +2,11 @@
 
 <h1 class="h1" style="text-align:center">Daren2</h1>
 
-<div class="card-body" style="text-align:center">
+<div class="card-body">
 <h3 class="h3">Choose your destiny</h3>
 
-<ul>
-    <li><a href="/all_dares">Show me all of the dares</a></li>
-    <li><a href="/rand_dare">Choose a random dare</a></li>
-</ul>
+    <h4 class="h4"><a href="/all_dares">Show me all of the dares</a></h4>
+    <h4 class="h4"><a href="/rand_dare">Choose a random dare</a></h4> 
 </div>
 
 <br/>
@@ -17,19 +15,23 @@
 <div class="container">
 <div class="album py-4 bg-light">
     <h2>Submit a Dare</h2>
-<form action="/home" method="post" name="newdare">
+<form action="/" method="post" name="newdare">
     <div>
-        <input type="text" placeholder="Dare Title" name="title"></input>
+        <label for="dareTitle">Dare Title</label>
+        <input type="text" placeholder="Dare Title" name="title" class="form-text" id="dareTitle"></input>
     </div>
     <br /><br />
     <div>
-        <textarea name="text", placeholder="Dare Text"></textarea>
-    </div>
-    <div>
-        <input type="text" placeholder="Added By? Type your name" name="addedBy"></input>
+        <label for="dareText">Dare Text</label>
+        <textarea name="text", placeholder="Dare Text" class="form-control" id="dareText"></textarea>
     </div>
     <br /><br />
-        <input type="submit" value="Submit Dare"></input>
+    <div>
+        <label for="dareAddedBy">Added By?</label>
+        <input type="text" placeholder="Added By? Type your name" name="addedBy" class="form-text" id="dareAddedBy"></input>
+    </div>
+    <br /><br />
+        <input type="submit" value="Submit Dare" class="btn btn-primary"></input>
     <br /><br />
 </form>
 </div>

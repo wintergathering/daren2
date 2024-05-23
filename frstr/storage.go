@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"cloud.google.com/go/firestore"
-	"github.com/google/uuid"
 	"github.com/wintergathering/daren2"
 	"google.golang.org/api/iterator"
 )
@@ -51,28 +50,18 @@ func (ds dareService) CreateDare(ctx context.Context, dare *daren2.Dare) error {
 
 func (ds dareService) GetRandomDare(ctx context.Context) (*daren2.Dare, error) {
 
-	//generate a random uuid
-	ref := uuid.New().String()
-
-	//try to find a random document 'less than' the random id we just created
-	//add condition where 'seen' is false
-	iter := ds.Client.Collection(daresColl).Where("UUID", "<", ref).OrderBy("UUID", 1).Limit(1).Documents(ctx)
+	iter := ds.Client.Collection(daresColl).Where("Seen", "==", false).Limit(1).Documents(ctx)
 
 	defer iter.Stop()
 
 	doc, err := iter.Next()
 
-	//try from the other direction if nothing is available
-
 	if err == iterator.Done {
-		iter := ds.Client.Collection(daresColl).Where("UUID", ">", ref).OrderBy("UUID", 1).Limit(1).Documents(ctx)
+		return nil, daren2.ErrNoDare
+	}
 
-		doc, err = iter.Next()
-
-		//return an error if it still can't find a dare
-		if err == iterator.Done {
-			return nil, daren2.ErrNoDare
-		}
+	if err != nil {
+		return nil, err
 	}
 
 	var dare *daren2.Dare
