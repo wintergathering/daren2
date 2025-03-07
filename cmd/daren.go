@@ -1,23 +1,29 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
-	"github.com/wintergathering/daren2/frstr"
+	"database/sql"
+	"log"
+
 	"github.com/wintergathering/daren2/server"
+	"github.com/wintergathering/daren2/sqlite"
+
+	_ "modernc.org/sqlite"
 )
 
-const listenAddr = ":8080"
+const addr = ":8080"
+const dsn = "./daren.db"
+const templatePaths = "templates/*.html"
 
 func main() {
+	db, err := sql.Open("sqlite", dsn)
 
-	client := frstr.NewFirestoreClient()
+	if err != nil {
+		log.Fatalf("Couldn't open database: %s", err)
+	}
 
-	defer client.Close()
+	ds := sqlite.NewDareService(db)
 
-	ds := frstr.NewDareService(client)
-	r := mux.NewRouter()
-
-	s := server.NewServer(r, ds, listenAddr)
+	s := server.NewServer(addr, ds, templatePaths)
 
 	s.Run()
 }
