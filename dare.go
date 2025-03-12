@@ -14,6 +14,7 @@ type Dare struct {
 	AddedBy   string    `json:"addedBy"`
 	Seen      bool      `json:"seen"`
 	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type DareService interface {
@@ -21,4 +22,6 @@ type DareService interface {
 	GetDareByID(id int) (*Dare, error)
 	GetRandomDare() (*Dare, error)
 	GetAllDares() ([]*Dare, error)
+	MarkDareSeen(id int) error
+	DeleteDare(id int) error
 }

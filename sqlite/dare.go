@@ -47,7 +47,7 @@ func (ds dareService) CreateDare(d *daren.Dare) (int, error) {
 func (ds dareService) GetDareByID(id int) (*daren.Dare, error) {
 	dare := &daren.Dare{}
 
-	err := ds.db.QueryRow("SELECT * FROM dares WHERE dare_id = ?", id).Scan(&dare.ID, &dare.Title, &dare.Text, &dare.AddedBy, &dare.Seen, &dare.CreatedAt)
+	err := ds.db.QueryRow("SELECT * FROM dares WHERE dare_id = ?", id).Scan(&dare.ID, &dare.Title, &dare.Text, &dare.AddedBy, &dare.Seen, &dare.CreatedAt, &dare.UpdatedAt)
 
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (ds dareService) GetRandomDare() (*daren.Dare, error) {
 	`
 	dare := &daren.Dare{}
 
-	err := ds.db.QueryRow(qry).Scan(&dare.ID, &dare.Title, &dare.Text, &dare.AddedBy, &dare.Seen, &dare.CreatedAt)
+	err := ds.db.QueryRow(qry).Scan(&dare.ID, &dare.Title, &dare.Text, &dare.AddedBy, &dare.Seen, &dare.CreatedAt, &dare.UpdatedAt)
 
 	if err != nil {
 		return nil, err
@@ -76,6 +76,68 @@ func (ds dareService) GetRandomDare() (*daren.Dare, error) {
 }
 
 func (ds dareService) GetAllDares() ([]*daren.Dare, error) {
-	//TODO
-	return nil, nil
+	qry := `
+		SELECT * FROM dares
+	`
+
+	var dares []*daren.Dare
+
+	rows, err := ds.db.Query(qry)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		dare := &daren.Dare{}
+
+		err = rows.Scan(&dare.ID, &dare.Title, &dare.Text, &dare.AddedBy, &dare.Seen, &dare.CreatedAt, &dare.UpdatedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		dares = append(dares, dare)
+
+	}
+	return dares, nil
+}
+
+func (ds dareService) MarkDareSeen(id int) error {
+	qry := `
+		UPDATE dares SET seen = 1 WHERE dare_id = ?	
+	`
+	stmt, err := ds.db.Prepare(qry)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ds dareService) DeleteDare(id int) error {
+	qry := `
+		DELETE FROM dares WHERE dare_id = ?
+	`
+
+	stmt, err := ds.db.Prepare(qry)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
