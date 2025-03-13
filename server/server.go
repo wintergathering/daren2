@@ -43,6 +43,7 @@ func NewServer(addr string, ds daren.DareService, templatePaths string) *Server 
 
 func (s *Server) registerRoutes() {
 	s.Router.HandleFunc("GET /", handleIndex)
+	s.Router.HandleFunc("GET /weather", handleWeather)
 }
 
 func (s *Server) Run() {
