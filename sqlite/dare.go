@@ -20,7 +20,7 @@ func NewDareService(db *sql.DB) daren.DareService {
 
 func (ds dareService) CreateDare(d *daren.Dare) (int, error) {
 	qry := `
-		INSERT INTO dares (title, dare_text, added_by) VALUES (?, ?, ?)	
+		INSERT INTO dares (title, dare_text, added_by, seen) VALUES (?, ?, ?, ?)	
 	`
 
 	stmt, err := ds.db.Prepare(qry)
@@ -29,7 +29,7 @@ func (ds dareService) CreateDare(d *daren.Dare) (int, error) {
 		return 0, err
 	}
 
-	res, err := stmt.Exec(d.Title, d.Text, d.AddedBy)
+	res, err := stmt.Exec(d.Title, d.Text, d.AddedBy, 0)
 
 	if err != nil {
 		return 0, err

@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"encoding/json"
+
 	daren "github.com/wintergathering/daren2"
 )
 
@@ -36,13 +38,23 @@ func NewServer(addr string, ds daren.DareService, templatePaths string) *Server 
 		Srvr: &http.Server{
 			Addr: addr,
 		},
-		// DareService: ds,
-		Templates: tmpl,
+		DareService: ds,
+		Templates:   tmpl,
 	}
 }
 
 func (s *Server) registerRoutes() {
-	s.Router.HandleFunc("GET /", handleIndex)
+	//home
+	s.Router.HandleFunc("GET /", s.handleIndex)
+
+	//api
+	s.Router.HandleFunc("POST /api/v1/dare/create", s.handleApiCreateDare)
+	s.Router.HandleFunc("GET /api/v1/dare/id/{id}", s.handleApiGetDareById)
+	s.Router.HandleFunc("GET /api/v1/dare/random", s.handleApiGetRandomDare)
+	s.Router.HandleFunc("GET /api/v1/dare/all", s.handleApiGetAllDares)
+	s.Router.HandleFunc("DELETE /api/v1/dare/id/{id}", s.handleApiDeleteDare)
+
+	//html
 }
 
 func (s *Server) Run() {
@@ -54,4 +66,11 @@ func (s *Server) Run() {
 	fmt.Println("Running Daren")
 
 	s.Srvr.ListenAndServe()
+}
+
+// utility ------------
+func writeJSON(w http.ResponseWriter, statusCode int, v any) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(v)
 }
