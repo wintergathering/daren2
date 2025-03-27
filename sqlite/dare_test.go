@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	daren "github.com/wintergathering/daren2"
+	"github.com/wintergathering/daren2/sqlite"
 	_ "modernc.org/sqlite"
 )
 
@@ -38,4 +40,40 @@ func NewTestDB(t *testing.T) (*sql.DB, func()) {
 	}
 
 	return db, cleanup
+}
+
+// create a new test dare service
+func NewTestDareService(t *testing.T) (daren.DareService, func()) {
+	t.Helper() //marks the function as a helper
+
+	db, cleanup := NewTestDB(t)
+
+	ds := sqlite.NewDareService(db)
+
+	return ds, cleanup
+}
+
+func TestDareService_CreateDare(t *testing.T) {
+	ds, cleanup := NewTestDareService(t)
+	defer cleanup()
+
+	//define a test case -- clean this up a bit later
+	testCase := struct {
+		name    string
+		dare    *daren.Dare
+		wantID  int
+		wantErr bool
+	}{
+		name: "create a dare",
+		dare: &daren.Dare{
+			Title:   "Test Dare",
+			Text:    "This is a test dare",
+			AddedBy: "Test User",
+			Seen:    false,
+		},
+		wantID:  1,
+		wantErr: false,
+	}
+
+	//RESUME HERE!
 }
