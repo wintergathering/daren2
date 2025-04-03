@@ -15,3 +15,9 @@ clean:
 
 create-tables: $(MIGRATION_SCRIPT) $(DATABASE)
 	sqlite3 $(DATABASE) < $(MIGRATION_SCRIPT)
+
+test:
+	go test ./...
+
+test-verbose:
+	go test ./... -v
