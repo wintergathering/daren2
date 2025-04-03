@@ -251,3 +251,63 @@ func TestDareService_GetAllDares(t *testing.T) {
 
 	})
 }
+
+func TestDareService_MarkDareSeen(t *testing.T) {
+	ds, cleanup := NewTestDareService(t)
+	defer cleanup()
+
+	testCase := testDare{
+		name: "mark dare as seen",
+		dare: &daren.Dare{
+			ID:   2,
+			Seen: true,
+		},
+		wantID:  2,
+		wantErr: false,
+	}
+
+	t.Run(testCase.name, func(t *testing.T) {
+		err := ds.MarkDareSeen(testCase.wantID)
+
+		if (err != nil) != testCase.wantErr {
+			t.Errorf("MarkDareSeen() err = %v, wantErr = %v", err, testCase.wantErr)
+			return
+		}
+
+		//ignoring the error here since i've tested this elsewhere
+		got, _ := ds.GetDareByID(testCase.wantID)
+
+		if got.Seen != testCase.dare.Seen {
+			t.Errorf("MarkDareSeen() returned %v, expected %v", got.Seen, testCase.dare.Seen)
+			return
+		}
+	})
+}
+
+func TestDareService_DeleteDare(t *testing.T) {
+	ds, cleanup := NewTestDareService(t)
+	defer cleanup()
+
+	testCase := testDare{
+		name:    "delete dare",
+		dare:    nil,
+		wantID:  1,
+		wantErr: false,
+	}
+
+	t.Run(testCase.name, func(t *testing.T) {
+		err := ds.DeleteDare(testCase.wantID)
+
+		if (err != nil) != testCase.wantErr {
+			t.Errorf("DeleteDare() err = %v, wantErr = %v", err, testCase.wantErr)
+		}
+
+		//try to retrieve the deleted dare
+		_, err = ds.GetDareByID(testCase.wantID)
+
+		if err == nil {
+			t.Errorf("DeleteDare() did not delete dare with ID %d", testCase.wantID)
+		}
+
+	})
+}
