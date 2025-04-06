@@ -13,12 +13,34 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 
-	s.Templates.ExecuteTemplate(w, "placeholder.html", nil)
+	s.Templates.ExecuteTemplate(w, "index.html", nil)
 }
 
 // html routes ---------------
 func (s *Server) handleCreateDare(w http.ResponseWriter, r *http.Request) {
 	//todo
+}
+
+func (s *Server) HandleGetRandomDare(w http.ResponseWriter, r *http.Request) {
+	//TODO
+	dare, err := s.DareService.GetRandomDare()
+
+	//TODO -- do something if there are no more dares
+
+	if err != nil {
+		s.Templates.ExecuteTemplate(w, "error.html", nil)
+		return
+	}
+
+	err = s.DareService.MarkDareSeen(dare.ID)
+
+	if err != nil {
+		s.Templates.ExecuteTemplate(w, "error.html", nil)
+		return
+	}
+
+	s.Templates.ExecuteTemplate(w, "single_dare.html", dare)
+
 }
 
 // api routes ----------------

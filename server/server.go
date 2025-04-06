@@ -44,6 +44,9 @@ func NewServer(addr string, ds daren.DareService, templatePaths string) *Server 
 }
 
 func (s *Server) registerRoutes() {
+
+	//TODO -- use custom css here
+
 	//home
 	s.Router.HandleFunc("GET /", s.handleIndex)
 
@@ -55,6 +58,7 @@ func (s *Server) registerRoutes() {
 	s.Router.HandleFunc("DELETE /api/v1/dare/id/{id}", s.handleApiDeleteDare)
 
 	//html
+	s.Router.HandleFunc("GET /random", s.HandleGetRandomDare)
 }
 
 func (s *Server) Run() {

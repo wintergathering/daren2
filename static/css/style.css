@@ -1,0 +1,46 @@
+/* /mnt/c/users/erice/documents/data/daren2/static/css/style.css */
+body {
+    background-color: #f8f9fa; /* Light gray background (same as before) */
+}
+.container {
+    margin-top: 50px;
+}
+.jumbotron {
+    background-color: #ffffff; /* White jumbotron */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+.btn-custom {
+    margin-top: 15px;
+    width: 100%;
+    border: none; /* Remove default button border */
+}
+
+/* Purple Color Palette */
+.btn-primary {
+    background-color: #9b5de5; /* Light Purple */
+    color: #ffffff; /* White text */
+}
+
+.btn-primary:hover {
+    background-color: #7840b8; /* Darker Purple on hover */
+}
+
+.btn-success {
+    background-color: #c8b6ff; /* Lavender */
+    color: #333333; /* Dark gray text */
+}
+
+.btn-success:hover {
+    background-color: #a388e8; /* Darker Lavender on hover */
+}
+
+.btn-info {
+    background-color: #d8b4fe; /* Light Lavender */
+    color: #333333; /* Dark gray text */
+}
+
+.btn-info:hover {
+    background-color: #b892e0; /* Darker Light Lavender on hover */
+}
