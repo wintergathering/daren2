@@ -16,9 +16,54 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	s.Templates.ExecuteTemplate(w, "index.html", nil)
 }
 
+func (s *Server) handleSuccess(w http.ResponseWriter, r *http.Request) {
+	//set header to html
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+
+	s.Templates.ExecuteTemplate(w, "dare_success.html", nil)
+}
+
 // html routes ---------------
 func (s *Server) handleCreateDare(w http.ResponseWriter, r *http.Request) {
-	//todo
+	d := &daren.Dare{}
+
+	//check request method
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	//access form values
+	err := r.ParseForm()
+
+	if err != nil {
+		s.Templates.ExecuteTemplate(w, "error.html", nil)
+		return
+	}
+
+	d.Title = r.FormValue("title")
+	d.Text = r.FormValue("text")
+	d.AddedBy = r.FormValue("addedBy")
+
+	_, err = s.DareService.CreateDare(d)
+
+	//keeping this for now, but will want to return a real page in the future
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//redirect to /success
+	http.Redirect(w, r, "/success", http.StatusSeeOther)
+
+}
+
+func (s *Server) handleGetCreateDare(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+
+	s.Templates.ExecuteTemplate(w, "create_dare.html", nil)
 }
 
 func (s *Server) HandleGetRandomDare(w http.ResponseWriter, r *http.Request) {

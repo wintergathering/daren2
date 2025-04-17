@@ -49,6 +49,9 @@ func (s *Server) registerRoutes() {
 
 	//home
 	s.Router.HandleFunc("GET /", s.handleIndex)
+	s.Router.HandleFunc("GET /success", s.handleSuccess)
+	s.Router.HandleFunc("GET /create", s.handleGetCreateDare)
+	s.Router.HandleFunc("POST /create", s.handleCreateDare)
 
 	//api
 	s.Router.HandleFunc("POST /api/v1/dare/create", s.handleApiCreateDare)
