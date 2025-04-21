@@ -68,6 +68,11 @@ func (ds dareService) GetRandomDare() (*daren.Dare, error) {
 
 	err := ds.db.QueryRow(qry).Scan(&dare.ID, &dare.Title, &dare.Text, &dare.AddedBy, &dare.Seen, &dare.CreatedAt, &dare.UpdatedAt)
 
+	//if no rows are returned, return a daren.ErrNoDare custom error here
+	if err == sql.ErrNoRows {
+		return nil, daren.ErrNoDare
+	}
+
 	if err != nil {
 		return nil, err
 	}

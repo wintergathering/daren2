@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -67,10 +68,12 @@ func (s *Server) handleGetCreateDare(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) HandleGetRandomDare(w http.ResponseWriter, r *http.Request) {
-	//TODO
 	dare, err := s.DareService.GetRandomDare()
 
-	//TODO -- do something if there are no more dares
+	if errors.Is(err, daren.ErrNoDare) {
+		s.Templates.ExecuteTemplate(w, "no_dares.html", nil)
+		return
+	}
 
 	if err != nil {
 		s.Templates.ExecuteTemplate(w, "error.html", nil)
@@ -86,6 +89,22 @@ func (s *Server) HandleGetRandomDare(w http.ResponseWriter, r *http.Request) {
 
 	s.Templates.ExecuteTemplate(w, "single_dare.html", dare)
 
+}
+
+func (s *Server) handleGetAllDares(w http.ResponseWriter, r *http.Request) {
+	dares, err := s.DareService.GetAllDares()
+
+	if err != nil {
+		s.Templates.ExecuteTemplate(w, "error.html", nil)
+		return
+	}
+
+	if len(dares) == 0 {
+		s.Templates.ExecuteTemplate(w, "no_dares.html", nil)
+		return
+	}
+
+	s.Templates.ExecuteTemplate(w, "all_dares.html", dares)
 }
 
 // api routes ----------------

@@ -47,11 +47,13 @@ func (s *Server) registerRoutes() {
 
 	//TODO -- use custom css here
 
-	//home
+	//html
 	s.Router.HandleFunc("GET /", s.handleIndex)
 	s.Router.HandleFunc("GET /success", s.handleSuccess)
 	s.Router.HandleFunc("GET /create", s.handleGetCreateDare)
 	s.Router.HandleFunc("POST /create", s.handleCreateDare)
+	s.Router.HandleFunc("GET /all", s.handleGetAllDares)
+	s.Router.HandleFunc("GET /random", s.HandleGetRandomDare)
 
 	//api
 	s.Router.HandleFunc("POST /api/v1/dare/create", s.handleApiCreateDare)
@@ -59,9 +61,6 @@ func (s *Server) registerRoutes() {
 	s.Router.HandleFunc("GET /api/v1/dare/random", s.handleApiGetRandomDare)
 	s.Router.HandleFunc("GET /api/v1/dare/all", s.handleApiGetAllDares)
 	s.Router.HandleFunc("DELETE /api/v1/dare/id/{id}", s.handleApiDeleteDare)
-
-	//html
-	s.Router.HandleFunc("GET /random", s.HandleGetRandomDare)
 }
 
 func (s *Server) Run() {
