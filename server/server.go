@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
+	"time"
 
 	"encoding/json"
 
@@ -21,17 +24,33 @@ type Server struct {
 	//templates
 	Templates *template.Template
 
+	//logging
+	Logger *slog.Logger
+
 	//other stuff?
 	//config? logger?
 }
 
 // server constructor
-func NewServer(addr string, ds daren.DareService, templatePaths string) *Server {
+func NewServer(addr string, ds daren.DareService, templatePaths string, logFilePath string) *Server {
 	tmpl, err := template.ParseGlob(templatePaths)
 
 	if err != nil {
 		log.Fatalf("couldn't parse templates: %v", err.Error())
 	}
+
+	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Fatalf("couldn't open log file: %v", err.Error())
+	}
+
+	lh := slog.NewJSONHandler(logFile, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelDebug,
+	})
+
+	logger := slog.New(lh)
 
 	return &Server{
 		Router: http.NewServeMux(),
@@ -40,6 +59,7 @@ func NewServer(addr string, ds daren.DareService, templatePaths string) *Server 
 		},
 		DareService: ds,
 		Templates:   tmpl,
+		Logger:      logger,
 	}
 }
 
@@ -69,9 +89,34 @@ func (s *Server) Run() {
 
 	s.Srvr.Handler = s.Router
 
-	fmt.Println("Running Daren")
+	s.Logger.Info("Starting server", slog.String("addr", s.Srvr.Addr))
+
+	fmt.Printf("Starting server on %s\n", s.Srvr.Addr)
 
 	s.Srvr.ListenAndServe()
+}
+
+// log utility
+func (s *Server) logRequest(r *http.Request, statusCode int, err error) {
+	var e string
+	if err == nil {
+		e = ""
+	} else {
+		e = err.Error()
+	}
+	g := slog.Group(
+		"request_details",
+		slog.Time("timestamp", time.Now()),
+		slog.String("method", r.Method),
+		slog.String("path", r.URL.Path),
+		slog.String("remote_addr", r.RemoteAddr),
+		slog.Int("status_code", statusCode),
+		slog.Any("error", e),
+	)
+
+	s.Logger.Info("request received",
+		g,
+	)
 }
 
 // utility ------------

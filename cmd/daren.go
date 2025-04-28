@@ -13,6 +13,7 @@ import (
 const addr = ":8080"
 const dsn = "./daren.db"
 const templatePaths = "templates/*.html"
+const logFilePath = "daren.log"
 
 func main() {
 	db, err := sql.Open("sqlite", dsn)
@@ -23,7 +24,7 @@ func main() {
 
 	ds := sqlite.NewDareService(db)
 
-	s := server.NewServer(addr, ds, templatePaths)
+	s := server.NewServer(addr, ds, templatePaths, logFilePath)
 
 	s.Run()
 }
