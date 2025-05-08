@@ -1,4 +1,4 @@
-CREATE TABLE dares (
+CREATE TABLE IF NOT EXISTS dares (
     dare_id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     dare_text TEXT NOT NULL,

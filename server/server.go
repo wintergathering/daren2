@@ -16,8 +16,8 @@ type Server struct {
 	Srvr   *http.Server
 
 	//services
-	DareService daren.DareService
-
+	DareService    daren.DareService
+	PaybackService daren.PaybackService
 	//templates
 	Templates *template.Template
 
@@ -26,7 +26,7 @@ type Server struct {
 }
 
 // server constructor
-func NewServer(addr string, ds daren.DareService, templatePaths string) *Server {
+func NewServer(addr string, ds daren.DareService, ps daren.PaybackService, templatePaths string) *Server {
 	tmpl, err := template.ParseGlob(templatePaths)
 
 	if err != nil {
@@ -38,8 +38,9 @@ func NewServer(addr string, ds daren.DareService, templatePaths string) *Server 
 		Srvr: &http.Server{
 			Addr: addr,
 		},
-		DareService: ds,
-		Templates:   tmpl,
+		DareService:    ds,
+		PaybackService: ps,
+		Templates:      tmpl,
 	}
 }
 
@@ -54,6 +55,9 @@ func (s *Server) registerRoutes() {
 	s.Router.HandleFunc("POST /create", s.handleCreateDare)
 	s.Router.HandleFunc("GET /all", s.handleGetAllDares)
 	s.Router.HandleFunc("GET /random", s.HandleGetRandomDare)
+	// --- STEE ZONE ---
+	s.Router.HandleFunc("GET /payback", s.handPaybackHome)
+	// --- END STEE ZONE
 
 	//api
 	s.Router.HandleFunc("POST /api/v1/dare/create", s.handleApiCreateDare)
@@ -61,6 +65,19 @@ func (s *Server) registerRoutes() {
 	s.Router.HandleFunc("GET /api/v1/dare/random", s.handleApiGetRandomDare)
 	s.Router.HandleFunc("GET /api/v1/dare/all", s.handleApiGetAllDares)
 	s.Router.HandleFunc("DELETE /api/v1/dare/id/{id}", s.handleApiDeleteDare)
+
+	// --- STEE ZONE --- Payback API Routes ---
+	s.Router.HandleFunc("POST /api/v1/payback/participants", s.handlePaybackCreateParticipant)
+	s.Router.HandleFunc("GET /api/v1/payback/participants", s.handlePaybackGetAllParticipants)
+	// --- Trip API Routes ---
+	s.Router.HandleFunc("POST /api/v1/payback/trips", s.handlePaybackCreateTrip)
+	s.Router.HandleFunc("GET /api/v1/payback/trips", s.handlePaybackGetAllTrips)
+	s.Router.HandleFunc("POST /api/v1/payback/trips/{tripID}/participants", s.handlePaybackAddParticipantToTrip)
+	s.Router.HandleFunc("GET /api/v1/payback/trips/{tripID}/participants", s.handlePaybackGetParticipantsForTrip)
+	// --- Purchase and Debt API Routes ---
+	s.Router.HandleFunc("POST /api/v1/payback/purchases", s.handlePaybackCreateOriginalPurchase)
+	s.Router.HandleFunc("GET /api/v1/payback/trips/{tripID}/purchases", s.handlePaybackGetPurchasesForTrip)
+	s.Router.HandleFunc("GET /api/v1/payback/purchases/{purchaseID}/debts", s.handlePaybackGetDebtsForPurchase)
 }
 
 func (s *Server) Run() {
