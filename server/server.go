@@ -44,6 +44,30 @@ func NewServer(addr string, ds daren.DareService, ps daren.PaybackService, templ
 	}
 }
 
+// CORS wrapper function for front-end dev, allows request from localhost:5173
+func enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set headers
+		// Allow requests from your Svelte dev server.
+		// For production, you'd want to be more specific or configure this.
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173") // Common SvelteKit dev port
+		// Or for more permissive development: w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Credentials", "true") // If you plan to use cookies/sessions
+
+		// Handle preflight requests (OPTIONS method)
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Next
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (s *Server) registerRoutes() {
 
 	//TODO -- use custom css here
@@ -74,6 +98,7 @@ func (s *Server) registerRoutes() {
 	s.Router.HandleFunc("GET /api/v1/payback/trips", s.handlePaybackGetAllTrips)
 	s.Router.HandleFunc("POST /api/v1/payback/trips/{tripID}/participants", s.handlePaybackAddParticipantToTrip)
 	s.Router.HandleFunc("GET /api/v1/payback/trips/{tripID}/participants", s.handlePaybackGetParticipantsForTrip)
+	s.Router.HandleFunc("DELETE /api/v1/payback/trips/{tripID}/participants/{participantID}", s.handlePaybackRemoveParticipantFromTrip)
 	// --- Purchase and Debt API Routes ---
 	s.Router.HandleFunc("POST /api/v1/payback/purchases", s.handlePaybackCreateOriginalPurchase)
 	s.Router.HandleFunc("GET /api/v1/payback/trips/{tripID}/purchases", s.handlePaybackGetPurchasesForTrip)
@@ -84,9 +109,9 @@ func (s *Server) Run() {
 	//register routes
 	s.registerRoutes()
 
-	s.Srvr.Handler = s.Router
+	s.Srvr.Handler = enableCORS(s.Router)
 
-	fmt.Println("Running Daren")
+	fmt.Println("Running Daren on ", s.Srvr.Addr)
 
 	s.Srvr.ListenAndServe()
 }

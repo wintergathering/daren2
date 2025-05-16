@@ -538,4 +538,38 @@ func (s *Server) handlePaybackGetDebtsForPurchase(w http.ResponseWriter, r *http
 	writeJSON(w, http.StatusOK, debts)
 }
 
+// handlePaybackRemoveParticipantFromTrip handles DELETE requests to remove a participant from a trip.
+// URL: /api/v1/payback/trips/{tripID}/participants/{participantID}
+func (s *Server) handlePaybackRemoveParticipantFromTrip(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "Method not allowed"})
+		return
+	}
+
+	tripIDStr := r.PathValue("tripID")
+	tripID, err := strconv.Atoi(tripIDStr)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid trip ID in URL path"})
+		return
+	}
+
+	participantIDStr := r.PathValue("participantID")
+	participantID, err := strconv.Atoi(participantIDStr)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid participant ID in URL path"})
+		return
+	}
+
+	err = s.PaybackService.RemoveParticipantFromTrip(tripID, participantID)
+	if err != nil {
+		// More specific error handling could be added here, e.g., if trip or participant not found,
+		// or if the participant wasn't on the trip.
+		log.Printf("Error removing participant %d from trip %d: %v", participantID, tripID, err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to remove participant from trip"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"message": "Participant removed from trip successfully"})
+}
+
 // --- END STEE ZONE ---
