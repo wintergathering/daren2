@@ -9,10 +9,13 @@ import (
 	daren "github.com/wintergathering/daren2"
 )
 
+// html routes ---------------
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	//set header to html
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
+
+	headerStatus := http.StatusOK
+	w.WriteHeader(headerStatus)
 
 	s.Templates.ExecuteTemplate(w, "index.html", nil)
 }
@@ -20,17 +23,19 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleSuccess(w http.ResponseWriter, r *http.Request) {
 	//set header to html
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
+
+	headerStatus := http.StatusOK
+	w.WriteHeader(headerStatus)
 
 	s.Templates.ExecuteTemplate(w, "dare_success.html", nil)
 }
 
-// html routes ---------------
 func (s *Server) handleCreateDare(w http.ResponseWriter, r *http.Request) {
 	d := &daren.Dare{}
 
 	//check request method
 	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -39,6 +44,7 @@ func (s *Server) handleCreateDare(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		s.Templates.ExecuteTemplate(w, "error.html", nil)
 		return
 	}
@@ -51,6 +57,7 @@ func (s *Server) handleCreateDare(w http.ResponseWriter, r *http.Request) {
 
 	//keeping this for now, but will want to return a real page in the future
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -67,15 +74,17 @@ func (s *Server) handleGetCreateDare(w http.ResponseWriter, r *http.Request) {
 	s.Templates.ExecuteTemplate(w, "create_dare.html", nil)
 }
 
-func (s *Server) HandleGetRandomDare(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetRandomDare(w http.ResponseWriter, r *http.Request) {
 	dare, err := s.DareService.GetRandomDare()
 
 	if errors.Is(err, daren.ErrNoDare) {
+		w.WriteHeader(http.StatusNotFound)
 		s.Templates.ExecuteTemplate(w, "no_dares.html", nil)
 		return
 	}
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		s.Templates.ExecuteTemplate(w, "error.html", nil)
 		return
 	}
@@ -83,10 +92,12 @@ func (s *Server) HandleGetRandomDare(w http.ResponseWriter, r *http.Request) {
 	err = s.DareService.MarkDareSeen(dare.ID)
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		s.Templates.ExecuteTemplate(w, "error.html", nil)
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	s.Templates.ExecuteTemplate(w, "single_dare.html", dare)
 
 }
@@ -95,15 +106,18 @@ func (s *Server) handleGetAllDares(w http.ResponseWriter, r *http.Request) {
 	dares, err := s.DareService.GetAllDares()
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		s.Templates.ExecuteTemplate(w, "error.html", nil)
 		return
 	}
 
 	if len(dares) == 0 {
+		w.WriteHeader(http.StatusNotFound)
 		s.Templates.ExecuteTemplate(w, "no_dares.html", nil)
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	s.Templates.ExecuteTemplate(w, "all_dares.html", dares)
 }
 
