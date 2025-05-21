@@ -572,4 +572,29 @@ func (s *Server) handlePaybackRemoveParticipantFromTrip(w http.ResponseWriter, r
 	writeJSON(w, http.StatusOK, map[string]string{"message": "Participant removed from trip successfully"})
 }
 
+// handlePaybackGetTripBalances handles GET requests to retrieve net balances for all participants in a trip.
+// URL: /api/v1/payback/trips/{tripID}/balances
+func (s *Server) handlePaybackGetTripBalances(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "Method not allowed"})
+		return
+	}
+
+	tripIDStr := r.PathValue("tripID")
+	tripID, err := strconv.Atoi(tripIDStr)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid trip ID in URL path"})
+		return
+	}
+
+	balances, err := s.PaybackService.GetTripBalances(tripID)
+	if err != nil {
+		log.Printf("Error getting balances for trip %d: %v", tripID, err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve balances for trip"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, balances)
+}
+
 // --- END STEE ZONE ---

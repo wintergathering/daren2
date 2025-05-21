@@ -333,11 +333,28 @@ func (s *paybackService) GetOriginalPurchaseByID(id int) (*daren.OriginalPurchas
 
 // GetOriginalPurchasesByTripID retrieves all original purchases for a given tripID.
 func (s *paybackService) GetOriginalPurchasesByTripID(tripID int) ([]*daren.OriginalPurchase, error) {
+	var purchases []*daren.OriginalPurchase
 	query := `
-		SELECT purchase_id, trip_id, payer_participant_id, total_amount, description, purchase_date, created_at
+		SELECT purchase_id, trip_id, payer_participant_id, total_amount, description, purchase_date
 		FROM original_purchases
 		WHERE trip_id = ?
-		ORDER BY purchase_date DESC, created_at DESC;
+		ORDER BY purchase_date DESC;
+		SELECT
+			op.purchase_id,
+			op.trip_id,
+			op.payer_participant_id,
+			p.name AS payer_name,
+			op.total_amount,
+			op.description,
+			op.purchase_date
+		FROM
+			original_purchases op
+		JOIN
+			participants p ON op.payer_participant_id = p.participant_id
+		WHERE
+			op.trip_id = ?
+		ORDER BY
+			op.purchase_date DESC;
 	`
 	rows, err := s.db.Query(query, tripID)
 	if err != nil {
@@ -345,14 +362,25 @@ func (s *paybackService) GetOriginalPurchasesByTripID(tripID int) ([]*daren.Orig
 	}
 	defer rows.Close()
 
-	var purchases []*daren.OriginalPurchase
 	for rows.Next() {
 		var op daren.OriginalPurchase
 		if err := rows.Scan(
-			&op.ID, &op.TripID, &op.PayerParticipantID, &op.TotalAmount,
-			&op.Description, &op.PurchaseDate, &op.CreatedAt,
+			&op.ID, &op.TripID, &op.PayerParticipantID, &op.PayerName, &op.TotalAmount,
+			&op.Description, &op.PurchaseDate,
 		); err != nil {
 			return nil, fmt.Errorf("error scanning original purchase row for trip: %w", err)
+		}
+		// Fetch individual debts to get recipient names for this purchase
+		debts, err := s.GetIndividualDebtsByPurchaseID(op.ID)
+		if err != nil {
+			// Log the error but continue, so one purchase failing to get debts doesn't break all
+			op.RecipientNames = []string{} // Initialize to empty slice
+		} else {
+			var recipientNames []string
+			for _, debt := range debts {
+				recipientNames = append(recipientNames, debt.DebtorName)
+			}
+			op.RecipientNames = recipientNames
 		}
 		purchases = append(purchases, &op)
 	}
@@ -368,6 +396,17 @@ func (s *paybackService) GetIndividualDebtsByPurchaseID(purchaseID int) ([]*dare
 		SELECT debt_id, original_purchase_id, debtor_participant_id, amount_owed, created_at
 		FROM individual_debts
 		WHERE original_purchase_id = ?;
+		SELECT
+			id.debt_id,
+			id.original_purchase_id,
+			id.debtor_participant_id,
+			p.name AS debtor_name,
+			id.amount_owed,
+			id.created_at 
+			-- Add other fields from IndividualDebt like is_settled, settlement_date, notes if needed
+		FROM individual_debts id
+		JOIN participants p ON id.debtor_participant_id = p.participant_id
+		WHERE id.original_purchase_id = ?;
 	`
 	rows, err := s.db.Query(query, purchaseID)
 	if err != nil {
@@ -379,7 +418,7 @@ func (s *paybackService) GetIndividualDebtsByPurchaseID(purchaseID int) ([]*dare
 	for rows.Next() {
 		var d daren.IndividualDebt
 		if err := rows.Scan(
-			&d.ID, &d.OriginalPurchaseID, &d.DebtorParticipantID, &d.AmountOwed, &d.CreatedAt,
+			&d.ID, &d.OriginalPurchaseID, &d.DebtorParticipantID, &d.DebtorName, &d.AmountOwed, &d.CreatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("error scanning individual debt row: %w", err)
 		}
@@ -405,6 +444,71 @@ func (s *paybackService) GetCreditsForParticipantInTrip(tripID, participantID in
 	// This is a bit more complex: find original_purchases where participantID is the payer,
 	// then find all individual_debts for those purchases where the debtor is NOT the payer.
 	return nil, fmt.Errorf("GetCreditsForParticipantInTrip not yet implemented")
+}
+
+func (s *paybackService) GetTripBalances(tripID int) ([]*daren.ParticipantBalance, error) {
+	// 1. Get all participants for the trip
+	participants, err := s.GetParticipantsForTrip(tripID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get participants for trip %d: %w", tripID, err)
+	}
+
+	if len(participants) == 0 {
+		return []*daren.ParticipantBalance{}, nil // No participants, so no balances
+	}
+
+	// Initialize balances map (participantID -> netBalanceInCents)
+	balances := make(map[int]int)
+	participantMap := make(map[int]string) // For easy name lookup
+	for _, p := range participants {
+		balances[p.ID] = 0
+		participantMap[p.ID] = p.Name
+	}
+
+	// 2. Fetch all individual debts linked to purchases within this trip,
+	//    along with the original payer of each purchase.
+	query := `
+		SELECT
+			op.payer_participant_id,
+			id.debtor_participant_id,
+			id.amount_owed
+		FROM
+			individual_debts id
+		JOIN
+			original_purchases op ON id.original_purchase_id = op.purchase_id
+		WHERE
+			op.trip_id = ?;
+	`
+	rows, err := s.db.Query(query, tripID)
+	if err != nil {
+		return nil, fmt.Errorf("could not query for debts and payers for trip %d: %w", tripID, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var payerID, debtorID, amountOwed int
+		if err := rows.Scan(&payerID, &debtorID, &amountOwed); err != nil {
+			return nil, fmt.Errorf("error scanning debt/payer row for trip %d: %w", tripID, err)
+		}
+
+		balances[payerID] += amountOwed
+		balances[debtorID] -= amountOwed
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating debt/payer rows for trip %d: %w", tripID, err)
+	}
+
+	// 3. Format the output
+	var result []*daren.ParticipantBalance
+	for _, p := range participants { // Iterate in original participant order for consistency
+		result = append(result, &daren.ParticipantBalance{
+			ParticipantID:   p.ID,
+			ParticipantName: p.Name, // Name already available from GetParticipantsForTrip
+			NetBalance:      balances[p.ID],
+		})
+	}
+
+	return result, nil
 }
 
 // Ensure paybackService implements daren.PaybackService

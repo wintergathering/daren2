@@ -36,13 +36,15 @@ type OriginalPurchase struct {
 	ID                 int       `json:"id"`
 	TripID             int       `json:"trip_id"`
 	PayerParticipantID int       `json:"payer_participant_id"`
+	PayerName          string    `json:"payer_name,omitempty"`
 	TotalAmount        int       `json:"total_amount"` // In cents
 	Description        string    `json:"description"`
 	PurchaseDate       time.Time `json:"purchase_date"`
 	CreatedAt          time.Time `json:"created_at,omitempty"`
+	RecipientNames     []string  `json:"recipient_names,omitempty"`
 	// For display/API responses, you might want to include:
-	PayerName string `json:"payer_name,omitempty"`
-	TripName  string `json:"trip_name,omitempty"`
+
+	TripName string `json:"trip_name,omitempty"`
 }
 
 // IndividualDebt represents a single person's share of an OriginalPurchase.
@@ -55,6 +57,13 @@ type IndividualDebt struct {
 	// For display/API responses, you might want to include:
 	DebtorName       string            `json:"debtor_name,omitempty"`
 	OriginalPurchase *OriginalPurchase `json:"original_purchase,omitempty"` // To show context
+}
+
+// ParticipantBalance holds the net financial status of a participant for a trip.
+type ParticipantBalance struct {
+	ParticipantID   int    `json:"participant_id"`
+	ParticipantName string `json:"participant_name"`
+	NetBalance      int    `json:"net_balance"` // In cents. Positive if creditor, negative if debtor.
 }
 
 // --- Service Interface Definition ---
@@ -91,5 +100,6 @@ type PaybackService interface {
 	GetCreditsForParticipantInTrip(tripID, participantID int) ([]*IndividualDebt, error) // Debts where they are the payer (via OriginalPurchase)
 
 	// Balance/Summary methods (more complex, for later)
+	GetTripBalances(tripID int) ([]*ParticipantBalance, error) // New method
 	// GetTripSummary(tripID int) (map[string]int, error) // participantName -> netBalance
 }
