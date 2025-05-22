@@ -83,7 +83,7 @@ func main() {
 	paybackService = sqlite.NewPaybackService(paybackDb)
 
 	// --- Setup and Run Server ---
-	s := server.NewServer(addr, dareService, paybackService, templatePaths, daren.EmbeddedAssets)
+	s := server.NewServer(addr, dareService, paybackService, templatePaths, daren.EmbeddedAssets, logFilePath)
 
 	s.Run()
 }

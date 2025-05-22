@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"encoding/json"
 
@@ -60,7 +61,7 @@ func (sfs spaFileSystem) Open(name string) (fs.File, error) {
 }
 
 // server constructor
-func NewServer(addr string, ds daren.DareService, ps daren.PaybackService, templatePaths string, staticFS embed.FS) *Server {
+func NewServer(addr string, ds daren.DareService, ps daren.PaybackService, templatePaths string, staticFS embed.FS, logFilePath string) *Server {
 	tmpl, err := template.ParseGlob(templatePaths)
 
 	if err != nil {
@@ -88,6 +89,7 @@ func NewServer(addr string, ds daren.DareService, ps daren.PaybackService, templ
 		DareService:    ds,
 		PaybackService: ps,
 		Templates:      tmpl,
+		Logger:         logger,
 		StaticFS:       staticFS,
 	}
 }
@@ -136,7 +138,7 @@ func (s *Server) registerRoutes() {
 	s.Router.HandleFunc("GET /create", s.handleGetCreateDare)
 	s.Router.HandleFunc("POST /create", s.handleCreateDare)
 	s.Router.HandleFunc("GET /all", s.handleGetAllDares)
-	s.Router.HandleFunc("GET /random", s.HandleGetRandomDare)
+	s.Router.HandleFunc("GET /random", s.handleGetRandomDare)
 	// --- STEE ZONE ---
 	// --- END STEE ZONE
 
